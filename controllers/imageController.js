@@ -13,7 +13,7 @@ const path = require("path");
 // const pythonScriptPath = "./pp.py";
 const { fs } = require("fs");
 
-exports.uploadImage = safe(async (req, res) => {
+exports.uploadImage = async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
@@ -37,9 +37,9 @@ exports.uploadImage = safe(async (req, res) => {
         console.error(`Error in Python script: ${data}`);
         return res.status(500).json({ error: "Internal server error" });
       });
-  
+      
       pythonProcess.on("close", async (code) => {
-        if (code === 0) {
+        if (code == 0) {
           await Images.create({
             imageBase64: scriptOutput,
             ext: ext,
@@ -58,7 +58,7 @@ exports.uploadImage = safe(async (req, res) => {
       console.error("Error in file upload:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
-  })
+  }
 
   exports.getImage = safe(async (req, res) => {
     const image = await Images.aggregate([
