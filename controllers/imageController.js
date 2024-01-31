@@ -68,7 +68,7 @@ exports.uploadImage = async (req, res) => {
         },
       },
     ]);
-    console.log(image);
+    // console.log(image);
     response.successResponse(res, image);
   })
 

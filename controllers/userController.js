@@ -36,7 +36,7 @@ exports.addUser = safe(async (req, res) => {
     company,
   });
   const exist = await Users.findOne({ username: username });
-  console.log(exist);
+  // console.log(exist);
   if (exist) {
     return response.unauthorizedResponse(res, "Username already Exist");
   }
@@ -80,14 +80,14 @@ exports.deleteAllUsers = safe(async (req, res) => {
 });
 
 exports.getWorkDetails = safe(async (req, res) => {
-  console.log(req.user);
+  // console.log(req.user);
   const user = await Users.findById(req.user._id, { workDetails: 1 });
   response.successResponse(res, user);
 });
 
 exports.addWorkDetail = safe(async (req, res) => {
   const { name, month, hours } = req.body;
-  console.log(req.body)
+  // console.log(req.body)
   const userid = req.user._id;
   const user = await Users.findByIdAndUpdate(
     userid,
@@ -129,7 +129,7 @@ exports.getWorkDetail = safe(async (req, res) => {
 exports.updateWorkDetail = safe(async (req, res) => {
   const userid = req.user._id;
   const workid = req.params.workid;
-  console.log(workid)
+  // console.log(workid)
   
   const user = await Users.updateOne(
     { _id: userid, "workDetails._id": workid },
