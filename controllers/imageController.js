@@ -40,14 +40,14 @@ exports.uploadImage = async (req, res) => {
       
       pythonProcess.on("close", async (code) => {
         if (code == 0) {
-          await Images.create({
+          const image = await Images.create({
             imageBase64: scriptOutput,
             ext: ext,
             type: req.file.mimetype,
           });
           // console.log(req.file)
           removeFile(req.file.path);
-          return res.status(200).json({ output: scriptOutput });
+          return res.status(200).json({ output: image });
         } else {
           console.error(`Python script exited with code ${code}`);
           return res.status(500).json({ error: "Internal server error" });
