@@ -88,6 +88,11 @@ exports.getWorkDetails = safe(async (req, res) => {
 exports.addWorkDetail = safe(async (req, res) => {
   const { name, month, hours } = req.body;
   // console.log(req.body)
+  if(hours < 0)
+  {
+    // const err = new Error({hours: "Hours can not be negative"})
+    return response.badRequestResponse(res,"hours can not be negative!")
+  }
   const userid = req.user._id;
   const user = await Users.findByIdAndUpdate(
     userid,
@@ -130,7 +135,10 @@ exports.updateWorkDetail = safe(async (req, res) => {
   const userid = req.user._id;
   const workid = req.params.workid;
   // console.log(workid)
-  
+  if(req.body.hours && req.body.hours < 0){
+    // const err = new Error( "Hours can not be negative")
+    return response.badRequestResponse(res,"hours can not be negative!")
+  }
   const user = await Users.updateOne(
     { _id: userid, "workDetails._id": workid },
     { $set: { "workDetails.$": req.body } }
