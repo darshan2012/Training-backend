@@ -18,27 +18,31 @@ const storage = multer.diskStorage({
   },
 });
 
+const filter = (req, file, cb) => {
+  const filetypes = /jpeg|jpg|png|gif/;
+  const extname = filetypes.test(
+    path.extname(file.originalname).toLowerCase()
+  );
+  const mimetype = filetypes.test(file.mimetype);
+
+  if (mimetype && extname) return cb(null, true);
+  else {
+    cb(new Error("Error: Images Only!", 400), false);
+  }
+}
+
 const upload = multer({
   storage: storage,
   limits: {
     fileSize: 30 * 1000000,
   },
-  fileFilter: (req, file, cb) => {
-    const filetypes = /jpeg|jpg|png|gif/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
-    
-    if (mimetype && extname) return cb(null, true);
-    else {
-      cb(new Error("Error: Images Only!",400),false)
-    };
-}
+  fileFilter: filter,
 
   // fileFilter: (req, file, cb) => {
   //   const ext = path.extname(file.originalname).toLowerCase();
   //   console.log(ext);
   //   console.log(file);
-  
+
   //   if (ext !== ".png" || ext !== ".jpg" || ext !== ".jpeg" || ext !== ".gif") {
   //     // if (file.mimetype.startsWith("image")) {
   //     const err = new Error();
