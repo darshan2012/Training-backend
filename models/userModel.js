@@ -2,16 +2,16 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const workSchema = new Schema({
-    name: {
-        type: String
-    },
-    month: {
-        type: String
-    },
-    hours: {
-        type: Number
-    }
-})
+  name: {
+    type: String,
+  },
+  month: {
+    type: String,
+  },
+  hours: {
+    type: Number,
+  },
+});
 
 const userSchema = new Schema({
   username: {
@@ -67,6 +67,6 @@ const userSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Districts",
   },
-  workDetails:[workSchema]
+  workDetails: [workSchema],
 });
 module.exports = mongoose.model("Users", userSchema);

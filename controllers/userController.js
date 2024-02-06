@@ -87,6 +87,7 @@ exports.getWorkDetails = safe(async (req, res) => {
 
 exports.addWorkDetail = safe(async (req, res) => {
   const { name, month, hours } = req.body;
+  
   // console.log(req.body)
   if(hours < 0)
   {
