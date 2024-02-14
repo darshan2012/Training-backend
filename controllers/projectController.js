@@ -2,6 +2,7 @@ const Projects = require("../models/projectModel");
 
 const safe = require("../utils/safe");
 const response = require("../utils/response");
+const { default: mongoose } = require("mongoose");
 
 exports.getProjects = safe(async (req, res) => {
   const projects = await Projects.find({});
@@ -25,12 +26,12 @@ exports.getModules = safe(async (req, res) => {
   response.successResponse(res, modules);
 });
 exports.addModule = safe(async (req, res) => {
-  const { moduleName } = req.body;
+  const { name } = req.body;
   const project = await Projects.findByIdAndUpdate(
     req.params.projectid,
     {
       $push: {
-        modules: { moduleName },
+        modules: { moduleName: name },
       },
     },
     { new: true, projection: { modules: 1 } }
@@ -43,12 +44,13 @@ exports.getTasks = safe(async (req, res) => {
   response.successResponse(res, tasks);
 });
 exports.addTask = safe(async (req, res) => {
-  const { taskName, date, hours } = req.body;
+  const { taskName, date, research, development, meeting } = req.body;
   const task = {
     taskName,
+    date,
     research,
     development,
-    meeting
+    meeting,
   };
   if (date) task.date = date;
   const project = await Projects.findOneAndUpdate(
@@ -61,4 +63,71 @@ exports.addTask = safe(async (req, res) => {
     }
   );
   response.successfullyCreatedResponse(res, project, "task added!!");
+});
+
+exports.getAnalysis = safe(async (req, res) => {
+  const { startDate, endDate, project, module } = req.query;
+  const pipelines = [];
+  if (project) {
+    pipelines.push({
+      $match: {
+        _id: new mongoose.Types.ObjectId(project),
+      },
+    });
+  }
+  pipelines.push({
+    $unwind: {
+      path: "$modules",
+    },
+  });
+  if (module) {
+    pipelines.push({
+      $match: {
+        "modules._id": new mongoose.Types.ObjectId(module),
+      },
+    });
+  }
+  pipelines.push({
+    $unwind: {
+      path: "$modules.tasks",
+    },
+  });
+  // console.log(data);
+  if (startDate || endDate) {
+    console.log(startDate, endDate);
+    if (!startDate) startDate = endDate;
+    if (!endDate) endDate = startDate;
+    pipelines.push({
+      $match: {
+        "modules.tasks.date": {
+          $gte: new Date(startDate),
+          $lte: new Date(endDate),
+        },
+      },
+    });
+  }
+  pipelines.push({
+    $group: {
+      _id: null,
+      totalResearch: {
+        $sum: "$modules.tasks.research",
+      },
+      totalDevelopment: {
+        $sum: "$modules.tasks.development",
+      },
+      totalMeeting: {
+        $sum: "$modules.tasks.meeting",
+      },
+    },
+  });
+  pipelines.push({
+    $addFields: {
+      total: {
+        $add: ["$totalDevelopment", "$totalMeeting", "$totalResearch"],
+      },
+    },
+  });
+  const result = await Projects.aggregate(pipelines);
+
+  response.successResponse(res, result);
 });

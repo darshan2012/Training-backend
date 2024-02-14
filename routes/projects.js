@@ -15,4 +15,6 @@ router.route('/:projectid/module/:moduleid')
 .get(projectController.getTasks)
 .post(projectController.addTask)
 
+router.get('/analysis',projectController.getAnalysis)
+
 module.exports = router;

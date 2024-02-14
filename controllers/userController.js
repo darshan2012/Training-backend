@@ -36,7 +36,7 @@ exports.addUser = safe(async (req, res) => {
     company,
   });
   const exist = await Users.findOne({ username: username });
-  // console.log(exist);
+  console.log(exist);
   if (exist) {
     return response.unauthorizedResponse(res, "Username already Exist");
   }
@@ -87,21 +87,20 @@ exports.getWorkDetails = safe(async (req, res) => {
 
 exports.addWorkDetail = safe(async (req, res) => {
   const { name, month, hours } = req.body;
-  
+
   // console.log(req.body)
-  if(hours < 0)
-  {
+  if (hours < 0) {
     // const err = new Error({hours: "Hours can not be negative"})
-    return response.badRequestResponse(res,"hours can not be negative!")
+    return response.badRequestResponse(res, "hours can not be negative!");
   }
   const userid = req.user._id;
   const user = await Users.findByIdAndUpdate(
     userid,
     { $push: { workDetails: { name, month, hours } } },
-    
-    { new: true, projection:{workDetails:1} }
+
+    { new: true, projection: { workDetails: 1 } }
   );
-  
+
   response.successResponse(
     res,
     user,
@@ -136,9 +135,9 @@ exports.updateWorkDetail = safe(async (req, res) => {
   const userid = req.user._id;
   const workid = req.params.workid;
   // console.log(workid)
-  if(req.body.hours && req.body.hours < 0){
+  if (req.body.hours && req.body.hours < 0) {
     // const err = new Error( "Hours can not be negative")
-    return response.badRequestResponse(res,"hours can not be negative!")
+    return response.badRequestResponse(res, "hours can not be negative!");
   }
   const user = await Users.updateOne(
     { _id: userid, "workDetails._id": workid },
@@ -156,7 +155,7 @@ exports.deleteWorkDetail = safe(async (req, res) => {
   const workid = req.params.workid;
   const resObj = await Users.updateOne(
     { _id: userid },
-    { $pull: {"workDetails": {"_id": workid}}  }
+    { $pull: { workDetails: { _id: workid } } }
   );
   response.successResponse(
     res,
