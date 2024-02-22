@@ -17,4 +17,6 @@ router.route('/:projectid/module/:moduleid')
 
 router.get('/analysis',projectController.getAnalysis)
 
+router.get('/getDataWithHours',projectController.getDataWithHours)
+
 module.exports = router;

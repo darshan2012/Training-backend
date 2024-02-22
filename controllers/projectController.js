@@ -8,6 +8,102 @@ exports.getProjects = safe(async (req, res) => {
   const projects = await Projects.find({});
   response.successResponse(res, projects);
 });
+exports.getDataWithHours = safe(async (req, res) => {
+  const result = await Projects.aggregate([
+    {
+      $unwind: {
+        path: "$modules",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: "$modules.tasks",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $group: {
+        _id: "$modules.moduleName",
+        moduleResearchTotal: {
+          $sum: "$modules.tasks.research",
+        },
+        moduleMeetingTotal: {
+          $sum: "$modules.tasks.meeting",
+        },
+        moduleDevelopmentTotal: {
+          $sum: "$modules.tasks.development",
+        },
+        project: {
+          $addToSet: {
+            name: "$name",
+          },
+        },
+        tasks: {
+          $addToSet: {
+            $cond: {
+              if: { $eq: ["$modules.tasks", {}] },
+              then: null,
+              else: "$modules.tasks",
+            },
+          },
+        },
+      },
+    },
+    {
+      $addFields: {
+        moduleTotal: {
+          $add: [
+            "$moduleDevelopmentTotal",
+            "$moduleResearchTotal",
+            "$moduleMeetingTotal",
+          ],
+        },
+      },
+    },
+    {
+      $unwind: {
+        path: "$project",
+      },
+    },
+    {
+      $group: {
+        _id: "$project.name",
+        projectResearchTotal: {
+          $sum: "$moduleResearchTotal",
+        },
+        projectMeetingTotal: {
+          $sum: "$moduleMeetingTotal",
+        },
+        projectDevelopmentTotal: {
+          $sum: "$moduleDevelopmentTotal",
+        },
+        projectTotal: {
+          $sum: "$moduleTotal",
+        },
+        modules: {
+          $push: {
+            $cond: {
+              if: {
+                $eq: ["$_id", null],
+              },
+              then: "$$REMOVE",
+              else: {
+                moduleName: "$_id",
+                moduleResearchTotal: "$moduleResearchTotal",
+                moduleMeetingTotal: "$moduleMeetingTotal",
+                moduleDevelopmentTotal: "$moduleDevelopmentTotal",
+                moduleTotal: "$moduleTotal",
+                tasks: "$tasks",
+              },
+            },
+          },
+        },
+      },
+    },
+  ]);
+  response.successResponse(res, result, "data fetched successfully!");
+});
 exports.addProject = safe(async (req, res) => {
   const { name } = req.body;
   const project = new Projects({
